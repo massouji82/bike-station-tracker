@@ -1,0 +1,3 @@
+.card {
+  @apply text-center space-y-2 shadow-lg rounded-md p-4 border border-blue-200;
+}
