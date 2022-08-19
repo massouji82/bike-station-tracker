@@ -226,15 +226,17 @@ const StationLocator = () => {
                       />
                     )
                   })}
-
-                {!searchInput.length && (numberOfItemsShown + 20 <= mergedArray.length) &&
-                  <button className='show-more' onClick={showMore}>
-                    Show more
-                  </button>
-                }
               </>
             }
           </div>
+
+          {!searchInput.length && !nearestStation.length && (numberOfItemsShown + 20 <= mergedArray.length) &&
+            <div className='flex justify-center pb-4'>
+              <button className='show-more' onClick={showMore}>
+                Show more
+              </button>
+            </div>
+          }
         </>
       }
 
