@@ -42,6 +42,7 @@ const StationLocator = () => {
   const [mergedArray, setMergedArray] = useState<Merged[]>(defaultMergedArray);
   const [filteredResults, setFilteredResults] = useState<Merged[]>([]);
   const [nearestStation, setNearestStation] = useState<Merged[]>([]);
+  const [numberOfItemsShown, setNumberOfItemsShown] = useState(20);
   const [currentLocationPosition, setCurrentLocationPosition] = useState({
     currentLatitude: 0,
     currentLongitude: 0
@@ -57,6 +58,15 @@ const StationLocator = () => {
   const showAllStations = () => {
     setNearestStation([]);
     setSearchInput("");
+    setNumberOfItemsShown(20);
+  }
+
+  const showMore = () => {
+    if (numberOfItemsShown + 20 <= mergedArray.length) {
+      setNumberOfItemsShown(numberOfItemsShown + 20);
+    } else {
+      setNumberOfItemsShown(mergedArray.length);
+    }
   }
 
   const findNearestStation = () => {
@@ -65,8 +75,6 @@ const StationLocator = () => {
 
     setNearestStation(mergedArray.filter(station => station.lat === (nearestLatLon as any).latitude &&
       station.lon === (nearestLatLon as any).longitude));
-
-    console.log(nearestLatLon)
 
     setSearchInput("");
   }
@@ -78,6 +86,7 @@ const StationLocator = () => {
           { ...station, ...availability.find(element => element.station_id === station.station_id) }
         ))
       );
+
       return mergeArrays;
     }, [availability, bikeStations]
   )
@@ -166,9 +175,7 @@ const StationLocator = () => {
             </div>
 
             {nearestStation.length ?
-              <button className='button' onClick={showAllStations}>
-                Show me all stations
-              </button> :
+              <button className='button' onClick={showAllStations}>Show all stations</button> :
               <button className='button disabled:disabled-style' onClick={findNearestStation}
                       disabled={currentLocationPosition.currentLatitude === 0}>
                 Show me the nearest station
@@ -205,7 +212,7 @@ const StationLocator = () => {
                         currentLocationPosition={currentLocationPosition}
                       />
                     )
-                  }) : mergedArray.map((station, index) => {
+                  }) : mergedArray.slice(0, numberOfItemsShown).map((station, index) => {
                     return (
                       <StationCard
                         key={index}
@@ -219,6 +226,12 @@ const StationLocator = () => {
                       />
                     )
                   })}
+
+                {!searchInput.length && (numberOfItemsShown + 20 <= mergedArray.length) &&
+                  <button className='show-more' onClick={showMore}>
+                    Show more
+                  </button>
+                }
               </>
             }
           </div>

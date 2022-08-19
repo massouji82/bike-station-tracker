@@ -29,7 +29,10 @@ const StationCard = ({ name, address, num_bikes_available, num_docks_available, 
         {num_docks_available}
       </div>
 
-      <a className="flex items-center justify-center font-bold text-cityBike" href={`https://www.google.com/maps/dir/${currentLocationPosition.currentLatitude},${currentLocationPosition.currentLongitude}/${lat},${lon}/@59.9,10.6965678,12z/data=!4m2!4m1!3e2`} target="_blank" rel="noopener noreferrer">
+      <a className="flex items-center justify-center font-bold text-cityBike"
+         href={`https://www.google.com/maps/dir/${currentLocationPosition.currentLatitude},
+         ${currentLocationPosition.currentLongitude}/${lat},${lon}/@59.9,10.6965678,12z/data=!4m2!4m1!3e2`}
+         target="_blank" rel="noopener noreferrer">
         Show route to station
         <LinkIcon className="fill-blue-900 ml-2" />
       </a>

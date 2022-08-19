@@ -13,10 +13,14 @@
 }
 
 .button {
-  @apply flex justify-center font-medium items-center w-fit border-2 p-2 rounded shadow mt-6 mx-auto sm:mr-0 sm:mt-0
+  @apply flex justify-center font-medium items-center w-fit border-2 py-2 px-6 rounded shadow mt-6 mx-auto sm:mr-0 sm:mt-0
   sm:ml-4 sm:mb-0 disabled:text-white disabled:bg-gray-300 disabled:focus:outline-none disabled:border-0;
 }
 
 .search-icon {
   @apply flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none;
+}
+
+.show-more {
+    @apply flex-none font-medium items-center w-fit py-2 px-6 rounded shadow bg-cityBike text-white;
 }
