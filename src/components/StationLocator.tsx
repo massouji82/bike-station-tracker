@@ -1,11 +1,11 @@
 import axios, { AxiosError } from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import './StationLocator.css';
+import findNearest from 'geolib/es/findNearest';
 import LoadingIndicator from "../LoadingIndicator";
 import StationCard from './StationCard';
+import './StationLocator.css';
 import { ReactComponent as SearchIcon } from '../assets/search.svg';
-import findNearest from 'geolib/es/findNearest';
-import cityBikeLogo from '../assets/oslo-city-bike.png'
+import cityBikeLogo from '../assets/oslo-city-bike.png';
 
 interface BikeStations {
   station_id: string;
@@ -59,10 +59,14 @@ const StationLocator = () => {
     setSearchInput("");
   }
 
-  const showNearestStation = () => {
-    const nearestLatLon = findNearest({ latitude: currentLocationPosition.currentLatitude, longitude: currentLocationPosition.currentLongitude }, stationLatLon);
+  const findNearestStation = () => {
+    const nearestLatLon = findNearest({ latitude: currentLocationPosition.currentLatitude,
+      longitude: currentLocationPosition.currentLongitude }, stationLatLon);
 
-    setNearestStation(mergedArray.filter(station => station.lat === (nearestLatLon as any).latitude && station.lon === (nearestLatLon as any).longitude));
+    setNearestStation(mergedArray.filter(station => station.lat === (nearestLatLon as any).latitude &&
+      station.lon === (nearestLatLon as any).longitude));
+
+    console.log(nearestLatLon)
 
     setSearchInput("");
   }
@@ -120,13 +124,14 @@ const StationLocator = () => {
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(event.target.value.toLowerCase());
     const filteredArray = mergedArray.filter(element => {
-      return Object.values(element).join('').toLowerCase().includes(searchInput.toLowerCase());
+      return Object.values(element).join(' ').toLowerCase().includes(searchInput.toLowerCase());
     });
     setFilteredResults(filteredArray);
   }
 
   useEffect(() => {
-    fetchData();
+    fetchData()
+      .catch(console.error)
   }, [fetchData]);
 
   useEffect(() => {
@@ -135,45 +140,41 @@ const StationLocator = () => {
 
   return (
     <>
+      <div className='flex flex-col items-center text-3xl font-bold py-12 px-4 text-cityBike'>
+        <span className='block'>Welcome to</span>
+
+        <img className='rounded-md py-4 w-64 sm:w-96' src={cityBikeLogo} alt={"Oslo city bike"} />
+
+        <span className='block'>station finder</span>
+      </div>
+
       {fetching ?
         <div className="flex justify-center pt-20">
           <LoadingIndicator />
         </div>
         :
         <>
-          <div>
-            <div className='flex flex-col items-center text-3xl font-bold py-12 px-4 text-cityBike'>
-              <span className='block'>Welcome to</span>
-
-              <img className='rounded-md py-4 w-64 sm:w-96' src={cityBikeLogo} alt={"Oslo city bike"} />
-
-              <span className='block'>station finder</span>
-            </div>
-
-            <div className='px-4 flex flex-col justify-center sm:flex-row mb-4'>
-              <div className='relative'>
-                <div className="search-icon">
-                  <SearchIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                </div>
-
-                <input type="text" placeholder='Search' className="input" value={searchInput}
-                  onChange={handleSearch}
-                />
+          <div className='px-4 flex flex-col justify-center sm:flex-row mb-4'>
+            <div className='relative'>
+              <div className="search-icon">
+                <SearchIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
 
-              {nearestStation.length ?
-                <div className='button'>
-                  <button className='border-2 p-2 rounded-md shadow' onClick={showAllStations}>
-                    Show me all stations
-                  </button>
-                </div> :
-                <div className='button'>
-                  <button className='border-2 p-2 rounded-md shadow' onClick={showNearestStation}>
-                    Show me the nearest station
-                  </button>
-                </div>}
+              <input type="text" placeholder='Search' className="input" value={searchInput}
+                     onChange={handleSearch}
+              />
             </div>
+
+            {nearestStation.length ?
+              <button className='button' onClick={showAllStations}>
+                Show me all stations
+              </button> :
+              <button className='button disabled:disabled-style' onClick={findNearestStation}
+                      disabled={currentLocationPosition.currentLatitude === 0}>
+                Show me the nearest station
+              </button>}
           </div>
+
           <div className='wrapper'>
             {nearestStation.length ? nearestStation.map((station, index) => {
               return (

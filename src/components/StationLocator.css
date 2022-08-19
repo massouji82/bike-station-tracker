@@ -8,11 +8,13 @@
 }
 
 .input {
-  @apply block pl-10 h-12 w-full sm:w-64 bg-gray-100 border rounded-md focus:ring-blue-500 focus:border-blue-500 focus:outline-none;
+  @apply block pl-10 h-12 w-full sm:w-64 bg-gray-100 border rounded-md focus:ring-blue-500 focus:border-blue-500
+  focus:outline-none;
 }
 
 .button {
-  @apply flex justify-center font-medium items-center w-fit mt-6 mx-auto sm:mr-0 sm:mt-0 sm:ml-4 sm:mb-0;
+  @apply flex justify-center font-medium items-center w-fit border-2 p-2 rounded shadow mt-6 mx-auto sm:mr-0 sm:mt-0
+  sm:ml-4 sm:mb-0 disabled:text-white disabled:bg-gray-300 disabled:focus:outline-none disabled:border-0;
 }
 
 .search-icon {
