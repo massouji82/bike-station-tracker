@@ -70,8 +70,10 @@ const StationLocator = () => {
   }
 
   const findNearestStation = () => {
-    const nearestLatLon = findNearest({ latitude: currentLocationPosition.currentLatitude,
-      longitude: currentLocationPosition.currentLongitude }, stationLatLon);
+    const nearestLatLon = findNearest({
+      latitude: currentLocationPosition.currentLatitude,
+      longitude: currentLocationPosition.currentLongitude
+    }, stationLatLon);
 
     setNearestStation(mergedArray.filter(station => station.lat === (nearestLatLon as any).latitude &&
       station.lon === (nearestLatLon as any).longitude));
@@ -131,9 +133,14 @@ const StationLocator = () => {
   }, []);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(event.target.value.toLowerCase());
+    setSearchInput(event.target.value);
+
     const filteredArray = mergedArray.filter(element => {
-      return Object.values(element).join(' ').toLowerCase().includes(searchInput.toLowerCase());
+      return Object
+        .values(element)
+        .join(' ')
+        .toLowerCase()
+        .includes(event.target.value.toLowerCase());
     });
     setFilteredResults(filteredArray);
   }
@@ -170,14 +177,14 @@ const StationLocator = () => {
               </div>
 
               <input type="text" placeholder='Search' className="input" value={searchInput}
-                     onChange={handleSearch}
+                onChange={handleSearch}
               />
             </div>
 
             {nearestStation.length ?
               <button className='button' onClick={showAllStations}>Show all stations</button> :
               <button className='button disabled:disabled-style' onClick={findNearestStation}
-                      disabled={currentLocationPosition.currentLatitude === 0}>
+                disabled={currentLocationPosition.currentLatitude === 0}>
                 Show me the nearest station
               </button>}
           </div>
