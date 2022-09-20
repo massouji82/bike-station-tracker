@@ -1,6 +1,7 @@
-import axios, { AxiosError } from 'axios';
+import axios, {AxiosError, AxiosResponse} from 'axios';
 import { useCallback, useEffect, useState } from 'react';
 import findNearest from 'geolib/es/findNearest';
+
 import LoadingIndicator from "../LoadingIndicator";
 import StationCard from './StationCard';
 import './StationLocator.css';
@@ -8,7 +9,7 @@ import { ReactComponent as SearchIcon } from '../assets/search.svg';
 import cityBikeLogo from '../assets/oslo-city-bike.png';
 
 interface BikeStations {
-  station_id: string;
+  stationId?: string;
   name: string;
   address: string;
   lat: number;
@@ -16,20 +17,16 @@ interface BikeStations {
 }
 
 interface Availability {
-  num_bikes_available: number;
-  num_docks_available: number;
-  station_id: string;
+  numBikesAvailable: number;
+  numDocksAvailable: number;
+  stationId?: string;
 }
 
-export interface Merged {
-  name: string;
-  address: string;
-  num_bikes_available: number;
-  num_docks_available: number;
-  lat: number;
-  lon: number;
-  currentLocationPosition: any;
-  station_id?: string;
+export interface Merged extends BikeStations, Availability {
+  currentLocationPosition: {
+    currentLatitude: number,
+    currentLongitude: number
+  }
 }
 
 const defaultStations: BikeStations[] = [];
@@ -37,12 +34,16 @@ const defaultAvailability: Availability[] = [];
 const defaultMergedArray: Merged[] = [];
 
 const StationLocator = () => {
-  const [bikeStations, setBikeStations] = useState<BikeStations[]>(defaultStations);
-  const [availability, setAvailability] = useState<Availability[]>(defaultAvailability);
-  const [mergedArray, setMergedArray] = useState<Merged[]>(defaultMergedArray);
+  const numItemsToShow = 20;
+  const [bikeStations, setBikeStations] = useState(defaultStations);
+  const [availability, setAvailability] = useState(defaultAvailability);
+  const [mergedArray, setMergedArray] = useState(defaultMergedArray);
   const [filteredResults, setFilteredResults] = useState<Merged[]>([]);
   const [nearestStation, setNearestStation] = useState<Merged[]>([]);
-  const [numberOfItemsShown, setNumberOfItemsShown] = useState(20);
+  const [numItemsShown, setNumItemsShown] = useState(numItemsToShow);
+  const [fetching, setFetching] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
+  const [error, setError] = useState("");
   const [currentLocationPosition, setCurrentLocationPosition] = useState({
     currentLatitude: 0,
     currentLongitude: 0
@@ -51,21 +52,18 @@ const StationLocator = () => {
     latitude: 0,
     longitude: 0
   }]);
-  const [searchInput, setSearchInput] = useState("");
-  const [fetching, setFetching] = useState<boolean>(true);
-  const [error, setError] = useState("");
 
   const showAllStations = () => {
     setNearestStation([]);
     setSearchInput("");
-    setNumberOfItemsShown(20);
+    setNumItemsShown(numItemsToShow);
   }
 
   const showMore = () => {
-    if (numberOfItemsShown + 20 <= mergedArray.length) {
-      setNumberOfItemsShown(numberOfItemsShown + 20);
+    if (numItemsShown + numItemsToShow <= mergedArray.length) {
+      setNumItemsShown(numItemsShown + numItemsToShow);
     } else {
-      setNumberOfItemsShown(mergedArray.length);
+      setNumItemsShown(mergedArray.length);
     }
   }
 
@@ -75,8 +73,9 @@ const StationLocator = () => {
       longitude: currentLocationPosition.currentLongitude
     }, stationLatLon);
 
-    setNearestStation(mergedArray.filter(station => station.lat === (nearestLatLon as any).latitude &&
-      station.lon === (nearestLatLon as any).longitude));
+    setNearestStation(mergedArray.filter(station =>
+      station.lat === (nearestLatLon as any).latitude && station.lon === (nearestLatLon as any).longitude)
+    );
 
     setSearchInput("");
   }
@@ -85,11 +84,9 @@ const StationLocator = () => {
     () => {
       setMergedArray((bikeStations as Merged[])
         .map(station => (
-          { ...station, ...availability.find(element => element.station_id === station.station_id) }
+          { ...station, ...availability.find(element => element.stationId === station.stationId) }
         ))
       );
-
-      return mergeArrays;
     }, [availability, bikeStations]
   )
 
@@ -101,14 +98,14 @@ const StationLocator = () => {
 
       try {
         const bikeStationResult = await axios
-          .get<any>("https://gbfs.urbansharing.com/oslobysykkel.no/station_information.json",
+          .get<AxiosResponse>("https://gbfs.urbansharing.com/oslobysykkel.no/station_information.json",
             { headers: headers });
         const availabilityResult = await axios
-          .get<any>("https://gbfs.urbansharing.com/oslobysykkel.no/station_status.json",
+          .get<AxiosResponse>("https://gbfs.urbansharing.com/oslobysykkel.no/station_status.json",
             { headers: headers });
         setBikeStations(bikeStationResult.data.data.stations);
         setAvailability(availabilityResult.data.data.stations);
-        setStationLatLon(bikeStationResult.data.data.stations.map((station: any) => (
+        setStationLatLon(bikeStationResult.data.data.stations.map((station: BikeStations) => (
           { latitude: station.lat, longitude: station.lon }
         )));
       } catch (error) {
@@ -142,12 +139,30 @@ const StationLocator = () => {
         .toLowerCase()
         .includes(event.target.value.toLowerCase());
     });
+
     setFilteredResults(filteredArray);
+  }
+
+  const returnStations = (stationArray: Merged[]) => {
+    return stationArray.map((station, index) => {
+      return (
+        <StationCard
+          key={index}
+          name={station.name}
+          address={station.address}
+          numBikesAvailable={station.numBikesAvailable}
+          numDocksAvailable={station.numDocksAvailable}
+          lat={station.lat}
+          lon={station.lon}
+          currentLocationPosition={currentLocationPosition}
+        />
+      )}
+    )
   }
 
   useEffect(() => {
     fetchData()
-      .catch(console.error)
+      .catch(console.error);
   }, [fetchData]);
 
   useEffect(() => {
@@ -156,13 +171,11 @@ const StationLocator = () => {
 
   return (
     <>
-      <div className='flex flex-col items-center text-3xl font-bold py-12 px-4 text-cityBike'>
-        <span className='block'>Welcome to</span>
-
+      <h1 className='header-container'>
+        Welcome to
         <img className='rounded-md py-4 w-64 sm:w-96' src={cityBikeLogo} alt={"Oslo city bike"} />
-
-        <span className='block'>station finder</span>
-      </div>
+        station finder
+      </h1>
 
       {fetching ?
         <div className="flex justify-center pt-20">
@@ -182,63 +195,31 @@ const StationLocator = () => {
             </div>
 
             {nearestStation.length ?
-              <button className='button' onClick={showAllStations}>Show all stations</button> :
+              <button className='button' onClick={showAllStations}>
+                Show all stations
+              </button> :
               <button className='button disabled:disabled-style' onClick={findNearestStation}
                 disabled={currentLocationPosition.currentLatitude === 0}>
-                Show me the nearest station
+                {currentLocationPosition.currentLatitude === 0 ?
+                  "Loading nearest station ..." : "Show me the nearest station"
+                }
               </button>}
           </div>
 
           <div className='wrapper'>
-            {nearestStation.length ? nearestStation.map((station, index) => {
-              return (
-                <StationCard
-                  key={index}
-                  name={station.name}
-                  address={station.address}
-                  num_bikes_available={station.num_bikes_available}
-                  num_docks_available={station.num_docks_available}
-                  lat={station.lat}
-                  lon={station.lon}
-                  currentLocationPosition={currentLocationPosition}
-                />
-              )
-            }) :
+            {nearestStation.length ?
+              returnStations(nearestStation) :
               <>
                 {searchInput.length ?
-                  filteredResults.map((station, index) => {
-                    return (
-                      <StationCard
-                        key={index}
-                        name={station.name}
-                        address={station.address}
-                        num_bikes_available={station.num_bikes_available}
-                        num_docks_available={station.num_docks_available}
-                        lat={station.lat}
-                        lon={station.lon}
-                        currentLocationPosition={currentLocationPosition}
-                      />
-                    )
-                  }) : mergedArray.slice(0, numberOfItemsShown).map((station, index) => {
-                    return (
-                      <StationCard
-                        key={index}
-                        name={station.name}
-                        address={station.address}
-                        num_bikes_available={station.num_bikes_available}
-                        num_docks_available={station.num_docks_available}
-                        lat={station.lat}
-                        lon={station.lon}
-                        currentLocationPosition={currentLocationPosition}
-                      />
-                    )
-                  })}
+                  returnStations(filteredResults) :
+                  returnStations(mergedArray)
+                }
               </>
             }
           </div>
 
-          {!searchInput.length && !nearestStation.length && (numberOfItemsShown + 20 <= mergedArray.length) &&
-            <div className='flex justify-center pb-4'>
+          {!searchInput.length && !nearestStation.length && (numItemsShown + numItemsToShow <= mergedArray.length)
+            && <div className='flex justify-center pb-4'>
               <button className='show-more' onClick={showMore}>
                 Show more
               </button>
