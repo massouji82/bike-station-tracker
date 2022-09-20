@@ -183,10 +183,10 @@ const StationLocator = () => {
         </div>
         :
         <>
-          <div className='px-4 flex flex-col justify-center sm:flex-row mb-4'>
+          <div className='search-container'>
             <div className='relative'>
-              <div className="search-icon">
-                <SearchIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <div className='search-icon-wrapper'>
+                <SearchIcon className='search-icon' />
               </div>
 
               <input type="text" placeholder='Search' className="input" value={searchInput}
