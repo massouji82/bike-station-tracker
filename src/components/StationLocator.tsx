@@ -9,7 +9,7 @@ import { ReactComponent as SearchIcon } from '../assets/search.svg';
 import cityBikeLogo from '../assets/oslo-city-bike.png';
 
 interface BikeStations {
-  stationId?: string;
+  station_id?: string;
   name: string;
   address: string;
   lat: number;
@@ -17,9 +17,9 @@ interface BikeStations {
 }
 
 interface Availability {
-  numBikesAvailable: number;
-  numDocksAvailable: number;
-  stationId?: string;
+  num_bikes_available: number;
+  num_docks_available: number;
+  station_id?: string;
 }
 
 export interface Merged extends BikeStations, Availability {
@@ -84,7 +84,7 @@ const StationLocator = () => {
     () => {
       setMergedArray((bikeStations as Merged[])
         .map(station => (
-          { ...station, ...availability.find(element => element.stationId === station.stationId) }
+          { ...station, ...availability.find(element => element.station_id === station.station_id) }
         ))
       );
     }, [availability, bikeStations]
@@ -150,8 +150,8 @@ const StationLocator = () => {
           key={index}
           name={station.name}
           address={station.address}
-          numBikesAvailable={station.numBikesAvailable}
-          numDocksAvailable={station.numDocksAvailable}
+          num_bikes_available={station.num_bikes_available}
+          num_docks_available={station.num_docks_available}
           lat={station.lat}
           lon={station.lon}
           currentLocationPosition={currentLocationPosition}
@@ -212,7 +212,7 @@ const StationLocator = () => {
               <>
                 {searchInput.length ?
                   returnStations(filteredResults) :
-                  returnStations(mergedArray)
+                  returnStations(mergedArray.slice(0, numItemsShown))
                 }
               </>
             }

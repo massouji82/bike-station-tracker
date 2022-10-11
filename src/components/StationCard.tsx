@@ -5,8 +5,8 @@ import { ReactComponent as LinkIcon } from '../assets/external-link.svg';
 const StationCard = ({
                        name,
                        address,
-                       numBikesAvailable,
-                       numDocksAvailable,
+                       num_bikes_available,
+                       num_docks_available,
                        lat,
                        lon,
                        currentLocationPosition
@@ -28,13 +28,13 @@ const StationCard = ({
       <div className='font-medium'>Available bikes:</div>
 
       <div className='font-bold text-cityBike'>
-        {numBikesAvailable}
+        {num_bikes_available}
       </div>
 
       <div className='font-medium'>Available docks:</div>
 
       <div className='font-bold text-cityBike'>
-        {numDocksAvailable}
+        {num_docks_available}
       </div>
 
       <a className="link" target="_blank" rel="noopener noreferrer"
